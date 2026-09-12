@@ -1856,12 +1856,78 @@ function Index() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={gruplarAcik} onOpenChange={setGruplarAcik}>
+      <Dialog
+        open={gruplarAcik}
+        onOpenChange={(acik) => {
+          setGruplarAcik(acik);
+          setGrupTaslak(acik ? gruplar.map((g) => ({ ...g })) : null);
+        }}
+      >
         <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Gruplar oluştur</DialogTitle>
-            <DialogDescription>Talebeleri gruplara atayın.</DialogDescription>
+            <DialogTitle>Gruplar</DialogTitle>
+            <DialogDescription>
+              Grup adlarını ve mesul hocaları düzenleyin, talebeleri gruplara
+              atayın.
+            </DialogDescription>
           </DialogHeader>
+
+          {hocaModu && grupTaslak && (
+            <div className="space-y-2 rounded-md border border-border/60 p-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                Grup adı ve mesul hoca
+              </p>
+              {grupTaslak.map((g, i) => (
+                <div key={g.id} className="flex items-center gap-2">
+                  <Input
+                    value={g.ad}
+                    aria-label="Grup adı"
+                    className="h-9 flex-1"
+                    onChange={(e) =>
+                      setGrupTaslak((t) =>
+                        t
+                          ? t.map((x, j) =>
+                              j === i ? { ...x, ad: e.target.value } : x,
+                            )
+                          : t,
+                      )
+                    }
+                  />
+                  <Input
+                    value={g.hoca}
+                    aria-label="Mesul hoca"
+                    placeholder="Mesul hoca"
+                    className="h-9 flex-1"
+                    onChange={(e) =>
+                      setGrupTaslak((t) =>
+                        t
+                          ? t.map((x, j) =>
+                              j === i ? { ...x, hoca: e.target.value } : x,
+                            )
+                          : t,
+                      )
+                    }
+                  />
+                </div>
+              ))}
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={() => {
+                  const giris: Record<string, { ad: string; hoca: string }> =
+                    {};
+                  grupTaslak.forEach((g) => {
+                    giris[g.id] = { ad: g.ad.trim(), hoca: g.hoca.trim() };
+                  });
+                  void gruplariKaydet(giris)
+                    .then(() => toast.success("Grup bilgileri kaydedildi."))
+                    .catch(() => toast.error("Grup bilgileri kaydedilemedi."));
+                }}
+              >
+                Grup bilgilerini kaydet
+              </Button>
+            </div>
+          )}
           <div className="space-y-2">
             {talebeler
               .filter((t) => !t.aidatHaric)
