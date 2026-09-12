@@ -70,24 +70,6 @@ export function tamRaporOlustur({
   }
   s.push("");
 
-  // Ders durumu
-  const dersKapsam = kapsam.filter((t) => !t.aidatSadece);
-  s.push("4) DERS DURUMU (Kur'an / Fıkıh / Hadis)");
-  if (dersKapsam.length === 0) {
-    s.push("Kayıt yok.");
-  } else {
-    dersKapsam.forEach((t, i) => {
-      const g = GRUPLAR.find((x) => x.id === t.grup)?.ad ?? "-";
-      s.push(
-        `${i + 1}. ${t.isim} (${g}) — Sayfa: ${t.sayfa ?? 1}` +
-          ` | Haftalık hedef: ${t.hedefHaftalik ?? 0}` +
-          ` | Fıkıh konu: ${t.fikihKonu ?? 1}` +
-          ` | Hadis no: ${t.hadisNo ?? 1}` +
-          ` | Kıraat: ${t.kiraat ? "var" : "yok"}`,
-      );
-    });
-  }
-  s.push("");
   s.push("Bu rapor Talebe Takip Paneli tarafından otomatik hazırlanmıştır.");
   s.push("SİEC Jigjiga Kursu");
 
