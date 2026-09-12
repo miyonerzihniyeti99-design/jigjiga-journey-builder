@@ -83,8 +83,9 @@ import {
   talebeEkle,
   talebeGuncelle,
   talebeSil,
-  gruplar,
+  gruplariKaydet,
   type Grup,
+  type GrupBilgi,
   type Talebe,
   type SayfaKaydi,
   type KiraatYonu,
@@ -92,6 +93,7 @@ import {
 } from "@/lib/talebeler";
 import { dosyaFotoDataUrl, bashHarfler } from "@/lib/foto";
 import { aidatTutariniOku, hocaMailAyarDinle } from "@/lib/talebeler";
+import { useGruplar } from "@/hooks/use-gruplar";
 import { listeYazdir } from "@/lib/pdf";
 import { excelIndir, excelOku } from "@/lib/excel";
 import { Textarea } from "@/components/ui/textarea";
@@ -424,6 +426,8 @@ function Index() {
   const [sekme, setSekme] = useState<"hafizlik" | "aidat">("hafizlik");
   const [grupFiltre, setGrupFiltre] = useState<Grup | "hepsi">("hepsi");
   const [aidatListeAcik, setAidatListeAcik] = useState(false);
+  const gruplar = useGruplar();
+  const [grupTaslak, setGrupTaslak] = useState<GrupBilgi[] | null>(null);
 
   const [vermediAcik, setVermediAcik] = useState(false);
 
