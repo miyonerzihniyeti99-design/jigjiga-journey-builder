@@ -249,3 +249,40 @@ export async function aidatMailGonderimIsaretle(
   );
 }
 
+// ---- Grup adları ve mesul hocalar (düzenlenebilir) ----
+
+export type GrupBilgi = { id: Grup; ad: string; hoca: string };
+
+export function gruplariDinle(cb: (g: GrupBilgi[]) => void) {
+  return onSnapshot(doc(db, AYAR_COL, AYAR_DOC), (snap) => {
+    const v = snap.data()?.grupBilgi;
+    cb(
+      GRUPLAR.map((g) => {
+        const o =
+          v && typeof v === "object"
+            ? (v as Record<string, { ad?: unknown; hoca?: unknown }>)[g.id]
+            : undefined;
+        return {
+          id: g.id,
+          ad:
+            typeof o?.ad === "string" && o.ad.trim() ? o.ad.trim() : g.ad,
+          hoca:
+            typeof o?.hoca === "string" && o.hoca.trim()
+              ? o.hoca.trim()
+              : g.hoca,
+        };
+      }),
+    );
+  });
+}
+
+export async function gruplariKaydet(
+  giris: Record<string, { ad: string; hoca: string }>,
+) {
+  await setDoc(
+    doc(db, AYAR_COL, AYAR_DOC),
+    { grupBilgi: giris },
+    { merge: true },
+  );
+}
+
