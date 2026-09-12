@@ -553,7 +553,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
       ) : sekme === "rapor" ? (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Aidat, tahsilat ve ders durumunu içeren tam kurs raporunu mesûle
+            Aidat ve tahsilat durumunu içeren tam kurs raporunu mesûle
             gönderin. Metni göndermeden önce düzenleyebilirsiniz.
           </p>
 
