@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  gruplar,
   hocaMailAyarDinle,
   hocaMailleriKaydet,
   aidatMailGonderimIsaretle,
@@ -38,6 +37,7 @@ import {
 import { aidatHatirlatmaGonder } from "@/lib/aidatMail.functions";
 import { serbestMailGonder } from "@/lib/mail.functions";
 import { tamRaporOlustur } from "@/lib/rapor";
+import { useGruplar } from "@/hooks/use-gruplar";
 
 
 const AY_ADLARI = [
@@ -70,6 +70,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
   const simdi = new Date();
   const ayKey = `${simdi.getFullYear()}-${String(simdi.getMonth() + 1).padStart(2, "0")}`;
   const ayEtiket = `${AY_ADLARI[simdi.getMonth()]} ${simdi.getFullYear()}`;
+  const gruplar = useGruplar();
 
   const [ayar, setAyar] = useState<HocaMailAyar>({
     mailler: {},
