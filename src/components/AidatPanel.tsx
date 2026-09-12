@@ -22,10 +22,10 @@ import {
   aidatTutariniDinle,
   aidatTutariKaydet,
   aidatOdemeAyarla,
-  GRUPLAR,
   type Grup,
   type Talebe,
 } from "@/lib/talebeler";
+import { useGruplar } from "@/hooks/use-gruplar";
 import { bashHarfler } from "@/lib/foto";
 
 const AY_ADLARI = [
@@ -81,12 +81,14 @@ export default function AidatPanel({
 
   const ayKey = ayKeyOlustur(yil, ay);
 
+  const gruplar = useGruplar();
+
   const grupTalebeler = useMemo(() => {
     if (grupFiltre === "hepsi") return talebeler;
     return talebeler.filter((t) => t.grup === grupFiltre);
   }, [talebeler, grupFiltre]);
 
-  const aktifGrup = GRUPLAR.find((g) => g.id === grupFiltre);
+  const aktifGrup = gruplar.find((g) => g.id === grupFiltre);
 
   const ozet = useMemo(() => {
     const odeyen = grupTalebeler.filter((t) => t.aidat?.[ayKey]).length;
