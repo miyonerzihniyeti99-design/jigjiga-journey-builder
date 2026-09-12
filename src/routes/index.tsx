@@ -83,8 +83,9 @@ import {
   talebeEkle,
   talebeGuncelle,
   talebeSil,
-  GRUPLAR,
+  gruplariKaydet,
   type Grup,
+  type GrupBilgi,
   type Talebe,
   type SayfaKaydi,
   type KiraatYonu,
@@ -92,6 +93,7 @@ import {
 } from "@/lib/talebeler";
 import { dosyaFotoDataUrl, bashHarfler } from "@/lib/foto";
 import { aidatTutariniOku, hocaMailAyarDinle } from "@/lib/talebeler";
+import { useGruplar } from "@/hooks/use-gruplar";
 import { listeYazdir } from "@/lib/pdf";
 import { excelIndir, excelOku } from "@/lib/excel";
 import { Textarea } from "@/components/ui/textarea";
@@ -424,6 +426,8 @@ function Index() {
   const [sekme, setSekme] = useState<"hafizlik" | "aidat">("hafizlik");
   const [grupFiltre, setGrupFiltre] = useState<Grup | "hepsi">("hepsi");
   const [aidatListeAcik, setAidatListeAcik] = useState(false);
+  const gruplar = useGruplar();
+  const [grupTaslak, setGrupTaslak] = useState<GrupBilgi[] | null>(null);
 
   const [vermediAcik, setVermediAcik] = useState(false);
 
@@ -476,7 +480,7 @@ function Index() {
     const ayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const unsub = hocaMailAyarDinle((a) => {
       const gonderilen = a.gonderilen[ayKey] ?? [];
-      const bekleyen = GRUPLAR.filter(
+      const bekleyen = gruplar.filter(
         (g) => (a.mailler[g.id] ?? "").trim() && !gonderilen.includes(g.id),
       );
       if (bekleyen.length === 0) return;
@@ -728,7 +732,7 @@ function Index() {
     const grupAdi =
       grupFiltre === "hepsi"
         ? "Tüm gruplar"
-        : (GRUPLAR.find((g) => g.id === grupFiltre)?.ad ?? "Grup");
+        : (gruplar.find((g) => g.id === grupFiltre)?.ad ?? "Grup");
     if (secim === "tumu") {
       const aylar = aidatAySecenekleri().slice().reverse();
       listeYazdir({
@@ -808,7 +812,7 @@ function Index() {
         t.isim,
         yasHesapla(t.dogum) ?? "—",
         t.sinif || "—",
-        t.grup ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
+        t.grup ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
         t.telefon || "—",
       ]),
     });
@@ -831,7 +835,7 @@ function Index() {
         t.isim,
         yasHesapla(t.dogum) ?? "—",
         t.sinif || "—",
-        t.grup ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
+        t.grup ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
         t.telefon || "—",
       ]),
     );
@@ -935,7 +939,7 @@ function Index() {
         const sinif = al(r, "Sınıf", "Sinif");
         const telefon = al(r, "Telefon");
         const grupAd = al(r, "Grup");
-        const grup = GRUPLAR.find(
+        const grup = gruplar.find(
           (g) =>
             g.ad.toLocaleLowerCase("tr") === grupAd.toLocaleLowerCase("tr") ||
             g.id === grupAd,
@@ -1031,11 +1035,10 @@ function Index() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Gruplar</DropdownMenuLabel>
-                {([
-                  ["seviye1", "1. Seviye"],
-                  ["seviye2", "2. Seviye"],
-                  ["hazirlik", "Hazırlık"],
-                ] as const).map(([k, etiket]) => (
+                {gruplar.map((g) => {
+                  const k = g.id;
+                  const etiket = g.ad;
+                  return (
                   <DropdownMenuItem
                     key={k}
                     onSelect={() => {
@@ -1051,7 +1054,8 @@ function Index() {
                   >
                     {etiket}
                   </DropdownMenuItem>
-                ))}
+                  );
+                })}
                 {hocaModu && (
                   <>
                     <DropdownMenuSeparator />
@@ -1257,7 +1261,7 @@ function Index() {
                       <TableCell className="min-w-0 px-1 py-2 text-left text-[11px] text-muted-foreground sm:px-3 sm:py-3 sm:text-sm">
                         <span className="block truncate">
                           {t.grup
-                            ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—")
+                            ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—")
                             : "—"}
                         </span>
                       </TableCell>
@@ -1852,12 +1856,78 @@ function Index() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={gruplarAcik} onOpenChange={setGruplarAcik}>
+      <Dialog
+        open={gruplarAcik}
+        onOpenChange={(acik) => {
+          setGruplarAcik(acik);
+          setGrupTaslak(acik ? gruplar.map((g) => ({ ...g })) : null);
+        }}
+      >
         <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Gruplar oluştur</DialogTitle>
-            <DialogDescription>Talebeleri gruplara atayın.</DialogDescription>
+            <DialogTitle>Gruplar</DialogTitle>
+            <DialogDescription>
+              Grup adlarını ve mesul hocaları düzenleyin, talebeleri gruplara
+              atayın.
+            </DialogDescription>
           </DialogHeader>
+
+          {hocaModu && grupTaslak && (
+            <div className="space-y-2 rounded-md border border-border/60 p-3">
+              <p className="text-xs font-medium text-muted-foreground">
+                Grup adı ve mesul hoca
+              </p>
+              {grupTaslak.map((g, i) => (
+                <div key={g.id} className="flex items-center gap-2">
+                  <Input
+                    value={g.ad}
+                    aria-label="Grup adı"
+                    className="h-9 flex-1"
+                    onChange={(e) =>
+                      setGrupTaslak((t) =>
+                        t
+                          ? t.map((x, j) =>
+                              j === i ? { ...x, ad: e.target.value } : x,
+                            )
+                          : t,
+                      )
+                    }
+                  />
+                  <Input
+                    value={g.hoca}
+                    aria-label="Mesul hoca"
+                    placeholder="Mesul hoca"
+                    className="h-9 flex-1"
+                    onChange={(e) =>
+                      setGrupTaslak((t) =>
+                        t
+                          ? t.map((x, j) =>
+                              j === i ? { ...x, hoca: e.target.value } : x,
+                            )
+                          : t,
+                      )
+                    }
+                  />
+                </div>
+              ))}
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={() => {
+                  const giris: Record<string, { ad: string; hoca: string }> =
+                    {};
+                  grupTaslak.forEach((g) => {
+                    giris[g.id] = { ad: g.ad.trim(), hoca: g.hoca.trim() };
+                  });
+                  void gruplariKaydet(giris)
+                    .then(() => toast.success("Grup bilgileri kaydedildi."))
+                    .catch(() => toast.error("Grup bilgileri kaydedilemedi."));
+                }}
+              >
+                Grup bilgilerini kaydet
+              </Button>
+            </div>
+          )}
           <div className="space-y-2">
             {talebeler
               .filter((t) => !t.aidatHaric)
@@ -1879,7 +1949,7 @@ function Index() {
                       className="h-9 shrink-0 rounded-md border border-border bg-background px-2 text-xs text-foreground outline-none focus:border-primary"
                     >
                       <option value="">Grup yok</option>
-                      {GRUPLAR.map((g) => (
+                      {gruplar.map((g) => (
                         <option key={g.id} value={g.id}>
                           {g.ad}
                         </option>

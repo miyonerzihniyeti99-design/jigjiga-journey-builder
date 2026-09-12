@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  GRUPLAR,
   hocaMailAyarDinle,
   hocaMailleriKaydet,
   aidatMailGonderimIsaretle,
@@ -38,6 +37,7 @@ import {
 import { aidatHatirlatmaGonder } from "@/lib/aidatMail.functions";
 import { serbestMailGonder } from "@/lib/mail.functions";
 import { tamRaporOlustur } from "@/lib/rapor";
+import { useGruplar } from "@/hooks/use-gruplar";
 
 
 const AY_ADLARI = [
@@ -70,6 +70,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
   const simdi = new Date();
   const ayKey = `${simdi.getFullYear()}-${String(simdi.getMonth() + 1).padStart(2, "0")}`;
   const ayEtiket = `${AY_ADLARI[simdi.getMonth()]} ${simdi.getFullYear()}`;
+  const gruplar = useGruplar();
 
   const [ayar, setAyar] = useState<HocaMailAyar>({
     mailler: {},
@@ -112,7 +113,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
   const gonderilenler = ayar.gonderilen[ayKey] ?? [];
 
   const grupOzet = (grupId: Grup) => {
-    const g = GRUPLAR.find((x) => x.id === grupId)!;
+    const g = gruplar.find((x) => x.id === grupId)!;
     const liste = talebeler.filter((t) => t.grup === grupId);
     const odeyen = liste.filter((t) => t.aidat?.[ayKey]).length;
     return {
@@ -136,7 +137,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
   };
 
   const alicilar: Alici[] = useMemo(() => {
-    const sabit: Alici[] = GRUPLAR.map((g) => {
+    const sabit: Alici[] = gruplar.map((g) => {
       const o = grupOzet(g.id);
       return {
         anahtar: g.id,
@@ -163,12 +164,12 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
     });
     return [...sabit, ...ekstra];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [talebeler, ayKey, taslak, ayar.ekstraHocalar]);
+  }, [talebeler, ayKey, taslak, ayar.ekstraHocalar, gruplar]);
 
   const raporUret = (kapsam: string = raporKapsam) => {
     const grupId =
       kapsam === "genel" ? undefined : (kapsam as Grup);
-    return tamRaporOlustur({ talebeler, ayKey, ayEtiket, tutar, grupId });
+    return tamRaporOlustur({ talebeler, ayKey, ayEtiket, tutar, grupId, gruplar });
   };
 
   useEffect(() => {
@@ -178,11 +179,11 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
       `Kurs Raporu — ${ayEtiket}${
         raporKapsam === "genel"
           ? ""
-          : ` (${GRUPLAR.find((g) => g.id === raporKapsam)?.ad ?? ""})`
+          : ` (${gruplar.find((g) => g.id === raporKapsam)?.ad ?? ""})`
       }`,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sekme, raporKapsam, talebeler, tutar]);
+  }, [sekme, raporKapsam, talebeler, tutar, gruplar]);
 
   const seciliEposta = (secim: string, elle: string) => {
     if (secim === "elle") return elle.trim();
@@ -254,13 +255,13 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
       }
       const grupAdi = a.ekstraId
         ? (ayar.ekstraHocalar.find((h) => h.id === a.ekstraId)?.grup
-            ? GRUPLAR.find(
+            ? gruplar.find(
                 (g) =>
                   g.id ===
                   ayar.ekstraHocalar.find((h) => h.id === a.ekstraId)?.grup,
               )?.ad
             : undefined) ?? ""
-        : (GRUPLAR.find((g) => g.id === a.anahtar)?.ad ?? "");
+        : (gruplar.find((g) => g.id === a.anahtar)?.ad ?? "");
       await aidatHatirlatmaGonder({
         data: {
           eposta,
@@ -343,7 +344,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
 
   const tumMailleriSil = async () => {
     const bos: Record<string, string> = {};
-    GRUPLAR.forEach((g) => {
+    gruplar.forEach((g) => {
       bos[g.id] = "";
     });
     setTaslak(bos);
@@ -478,7 +479,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="genel">Genel (tüm kurs özeti)</SelectItem>
-                  {GRUPLAR.map((g) => (
+                  {gruplar.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
                       {g.ad}
                     </SelectItem>
@@ -565,9 +566,9 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="genel">
-                  Tüm kurs (Hazırlık + 1. Seviye + 2. Seviye)
+                  Tüm kurs ({gruplar.map((g) => g.ad).join(" + ")})
                 </SelectItem>
-                {GRUPLAR.map((g) => (
+                {gruplar.map((g) => (
                   <SelectItem key={g.id} value={g.id}>
                     {g.ad}
                   </SelectItem>

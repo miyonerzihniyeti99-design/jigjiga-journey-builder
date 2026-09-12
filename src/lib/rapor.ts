@@ -1,4 +1,4 @@
-import { GRUPLAR, type Grup, type Talebe } from "./talebeler";
+import { GRUPLAR, type Grup, type GrupBilgi, type Talebe } from "./talebeler";
 
 export function tamRaporOlustur({
   talebeler,
@@ -6,12 +6,14 @@ export function tamRaporOlustur({
   ayEtiket,
   tutar,
   grupId,
+  gruplar = GRUPLAR,
 }: {
   talebeler: Talebe[];
   ayKey: string;
   ayEtiket: string;
   tutar: number;
   grupId?: Grup;
+  gruplar?: GrupBilgi[];
 }) {
   const kapsam = grupId
     ? talebeler.filter((t) => t.grup === grupId)
@@ -23,7 +25,7 @@ export function tamRaporOlustur({
   s.push("SİEC JİGJİGA KURSU — KURS RAPORU");
   s.push(`Dönem: ${ayEtiket}`);
   if (grupId) {
-    s.push(`Grup: ${GRUPLAR.find((g) => g.id === grupId)?.ad ?? ""}`);
+    s.push(`Grup: ${gruplar.find((g) => g.id === grupId)?.ad ?? ""}`);
   }
   s.push("");
 
@@ -43,8 +45,10 @@ export function tamRaporOlustur({
 
   // Gruplara göre aidat
   s.push("2) GRUPLARA GÖRE AİDAT DURUMU");
-  const gruplar = grupId ? GRUPLAR.filter((g) => g.id === grupId) : GRUPLAR;
-  gruplar.forEach((g) => {
+  const kapsamGruplar = grupId
+    ? gruplar.filter((g) => g.id === grupId)
+    : gruplar;
+  kapsamGruplar.forEach((g) => {
     const liste = aidatKapsam.filter((t) => t.grup === g.id);
     const o = liste.filter((t) => t.aidat?.[ayKey]).length;
     s.push(
@@ -64,7 +68,7 @@ export function tamRaporOlustur({
     s.push("Bu ay tüm talebeler aidatını ödemiştir. Allah razı olsun.");
   } else {
     odemeyen.forEach((t, i) => {
-      const g = GRUPLAR.find((x) => x.id === t.grup)?.ad ?? "-";
+      const g = gruplar.find((x) => x.id === t.grup)?.ad ?? "-";
       s.push(`${i + 1}. ${t.isim} (${g})`);
     });
   }
