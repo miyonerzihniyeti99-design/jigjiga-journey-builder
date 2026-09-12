@@ -1035,11 +1035,10 @@ function Index() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Gruplar</DropdownMenuLabel>
-                {([
-                  ["seviye1", "1. Seviye"],
-                  ["seviye2", "2. Seviye"],
-                  ["hazirlik", "Hazırlık"],
-                ] as const).map(([k, etiket]) => (
+                {gruplar.map((g) => {
+                  const k = g.id;
+                  const etiket = g.ad;
+                  return (
                   <DropdownMenuItem
                     key={k}
                     onSelect={() => {
