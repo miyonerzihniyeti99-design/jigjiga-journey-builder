@@ -83,7 +83,7 @@ import {
   talebeEkle,
   talebeGuncelle,
   talebeSil,
-  GRUPLAR,
+  gruplar,
   type Grup,
   type Talebe,
   type SayfaKaydi,
@@ -476,7 +476,7 @@ function Index() {
     const ayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const unsub = hocaMailAyarDinle((a) => {
       const gonderilen = a.gonderilen[ayKey] ?? [];
-      const bekleyen = GRUPLAR.filter(
+      const bekleyen = gruplar.filter(
         (g) => (a.mailler[g.id] ?? "").trim() && !gonderilen.includes(g.id),
       );
       if (bekleyen.length === 0) return;
@@ -728,7 +728,7 @@ function Index() {
     const grupAdi =
       grupFiltre === "hepsi"
         ? "Tüm gruplar"
-        : (GRUPLAR.find((g) => g.id === grupFiltre)?.ad ?? "Grup");
+        : (gruplar.find((g) => g.id === grupFiltre)?.ad ?? "Grup");
     if (secim === "tumu") {
       const aylar = aidatAySecenekleri().slice().reverse();
       listeYazdir({
@@ -808,7 +808,7 @@ function Index() {
         t.isim,
         yasHesapla(t.dogum) ?? "—",
         t.sinif || "—",
-        t.grup ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
+        t.grup ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
         t.telefon || "—",
       ]),
     });
@@ -831,7 +831,7 @@ function Index() {
         t.isim,
         yasHesapla(t.dogum) ?? "—",
         t.sinif || "—",
-        t.grup ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
+        t.grup ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—") : "—",
         t.telefon || "—",
       ]),
     );
@@ -935,7 +935,7 @@ function Index() {
         const sinif = al(r, "Sınıf", "Sinif");
         const telefon = al(r, "Telefon");
         const grupAd = al(r, "Grup");
-        const grup = GRUPLAR.find(
+        const grup = gruplar.find(
           (g) =>
             g.ad.toLocaleLowerCase("tr") === grupAd.toLocaleLowerCase("tr") ||
             g.id === grupAd,
@@ -1257,7 +1257,7 @@ function Index() {
                       <TableCell className="min-w-0 px-1 py-2 text-left text-[11px] text-muted-foreground sm:px-3 sm:py-3 sm:text-sm">
                         <span className="block truncate">
                           {t.grup
-                            ? (GRUPLAR.find((g) => g.id === t.grup)?.ad ?? "—")
+                            ? (gruplar.find((g) => g.id === t.grup)?.ad ?? "—")
                             : "—"}
                         </span>
                       </TableCell>
@@ -1879,7 +1879,7 @@ function Index() {
                       className="h-9 shrink-0 rounded-md border border-border bg-background px-2 text-xs text-foreground outline-none focus:border-primary"
                     >
                       <option value="">Grup yok</option>
-                      {GRUPLAR.map((g) => (
+                      {gruplar.map((g) => (
                         <option key={g.id} value={g.id}>
                           {g.ad}
                         </option>
