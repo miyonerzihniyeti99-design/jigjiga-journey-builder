@@ -164,12 +164,12 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
     });
     return [...sabit, ...ekstra];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [talebeler, ayKey, taslak, ayar.ekstraHocalar]);
+  }, [talebeler, ayKey, taslak, ayar.ekstraHocalar, gruplar]);
 
   const raporUret = (kapsam: string = raporKapsam) => {
     const grupId =
       kapsam === "genel" ? undefined : (kapsam as Grup);
-    return tamRaporOlustur({ talebeler, ayKey, ayEtiket, tutar, grupId });
+    return tamRaporOlustur({ talebeler, ayKey, ayEtiket, tutar, grupId, gruplar });
   };
 
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
       }`,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sekme, raporKapsam, talebeler, tutar]);
+  }, [sekme, raporKapsam, talebeler, tutar, gruplar]);
 
   const seciliEposta = (secim: string, elle: string) => {
     if (secim === "elle") return elle.trim();
@@ -566,7 +566,7 @@ export default function AidatHatirlatma({ talebeler }: { talebeler: Talebe[] }) 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="genel">
-                  Tüm kurs (Hazırlık + 1. Seviye + 2. Seviye)
+                  Tüm kurs ({gruplar.map((g) => g.ad).join(" + ")})
                 </SelectItem>
                 {gruplar.map((g) => (
                   <SelectItem key={g.id} value={g.id}>
