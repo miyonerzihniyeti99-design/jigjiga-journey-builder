@@ -1054,7 +1054,8 @@ function Index() {
                   >
                     {etiket}
                   </DropdownMenuItem>
-                ))}
+                  );
+                })}
                 {hocaModu && (
                   <>
                     <DropdownMenuSeparator />
